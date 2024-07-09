@@ -1,0 +1,65 @@
+name: Wordpress Plugin build & deploy
+
+on:
+  push:
+    # paths:
+    #   - "plugins/bluepic-embed/**"
+    #   - ".github/workflows/wp-plugin.yaml"
+    branches: [main]
+
+env:
+
+jobs:
+  build_deploy:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./plugins/bluepic-embed
+    name: build and deploy
+    steps:
+      - uses: actions/checkout@v2
+      - name: Setup Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: "20"
+
+      - name: Install dependencies
+        run: npm install
+      - name: Build
+        run: npm run build
+      - name: Create plugin zip
+        run: npm run plugin-zip
+
+      - name: Read Changelog
+        id: read_changelog
+        run: |
+          changelog=$(cat CHANGELOG.txt)
+          echo "::set-output name=changelog::$changelog"
+
+      - name: Read version from package.json
+        id: read_version
+        run: |
+          version=$(node -p "require('./package.json').version")
+          echo "::set-output name=version::$version"
+
+      - name: Create Release
+        id: create_release
+        uses: actions/create-release@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # This token is provided by Actions, you do not need to create your own token
+        with:
+          tag_name: v${{ steps.read_version.outputs.version }}
+          release_name: Release v${{ steps.read_version.outputs.version }}
+          body: ${{ steps.read_changelog.outputs.changelog }}
+          draft: false
+          prerelease: false
+      - name: Upload Release Asset
+        id: upload-release-asset
+        uses: actions/upload-release-asset@v1
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        with:
+          upload_url: ${{ steps.create_release.outputs.upload_url }} # This pulls from the CREATE RELEASE step above, referencing it's ID to get its outputs object, which include a `upload_url`. See this blog post for more info: https://jasonet.co/posts/new-features-of-github-actions/#passing-data-to-future-steps
+          asset_path: ./plugins/bluepic-embed/bluepic-embed.zip
+          asset_name: bluepic-embed.zip
+          asset_content_type: application/zip

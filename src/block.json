@@ -1,0 +1,25 @@
+{
+	"$schema": "https://schemas.wp.org/trunk/block.json",
+	"apiVersion": 3,
+	"name": "create-block/bluepic-embed",
+	"version": "0.1.0",
+	"title": "Bluepic Embed",
+	"category": "widgets",
+	"icon": "smiley",
+	"description": "Block to embed bluepic templates",
+	"example": {},
+	"supports": {
+		"html": false
+	},
+	"attributes": {
+		"projectId": {
+			"type": "string",
+			"default": ""
+		}
+	},
+	"textdomain": "bluepic-embed",
+	"editorScript": "file:./index.js",
+	"editorStyle": "file:./index.css",
+	"style": "file:./style-index.css",
+	"viewScript": "file:./view.js"
+}
