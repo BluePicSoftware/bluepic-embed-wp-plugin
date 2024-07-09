@@ -7,9 +7,6 @@ on:
 jobs:
   build_deploy:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./plugins/bluepic-embed
     name: build and deploy
     steps:
       - uses: actions/checkout@v2
