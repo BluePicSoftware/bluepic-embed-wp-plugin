@@ -2,12 +2,7 @@ name: Wordpress Plugin build & deploy
 
 on:
   push:
-    # paths:
-    #   - "plugins/bluepic-embed/**"
-    #   - ".github/workflows/wp-plugin.yaml"
     branches: [main]
-
-env:
 
 jobs:
   build_deploy:
