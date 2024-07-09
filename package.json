@@ -1,6 +1,6 @@
 {
 	"name": "bluepic-embed",
-	"version": "0.1.0",
+	"version": "0.1.1",
 	"description": "A block to embed Bluepic templates into your webiste",
 	"author": "The WordPress Contributors",
 	"license": "GPL-2.0-or-later",

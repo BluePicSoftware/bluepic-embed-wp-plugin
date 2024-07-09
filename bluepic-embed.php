@@ -34,20 +34,37 @@ add_action( 'init', 'create_block_bluepic_embed_block_init' );
 function bluepic_add_oauth_button() {
 
 	$access_token = get_user_meta(get_current_user_id(), 'bluepic_access_token', true);
+	$projects = [];
+	$ok = false;
+
+	if ($access_token) {
+		$response = wp_remote_get('https://embed-backend.staging.bluepic.io/project', array(
+			'headers' => array(
+					'Authorization' => 'Bearer ' . $access_token,
+			),
+		));
+		if (!is_wp_error($response)) {
+			$projects = json_decode(wp_remote_retrieve_body($response), true);
+			$ok = true;
+		}
+	}
+
+
+
 	?>
 	<div class="wrap">
 			<h1>Bluepic Settings</h1>
 			<p>
-				<span style="font-family: monospace;">
-					<?php echo $access_token ? 'Authenticated' : 'Not authenticated'; ?>
+				<span style="color: #fff; padding: 10px 15px; font-family: monospace; background-color: <?php echo $access_token ? ($ok ? '#5fb545' : '#c93030') : '#c93030'; ?>;">
+					<?php echo $access_token ? ($ok ? 'Authenticated' : 'Authentication expired') : 'Not authenticated'; ?>
 				</span>
-			</p>🏳️‍🌈
-			<p>
+			</p>
+			<!-- <p>
 				<details>
 					<summary>Access Token</summary>
 					<pre><?php echo $access_token; ?></pre>
 				</details>
-			</p>
+			</p> -->
 			<a href="<?php echo admin_url('admin-ajax.php?action=bluepic_oauth_redirect'); ?>" class="button button-primary">Authenticate with Bluepic</a>
 	</div>
 	<?php
@@ -102,34 +119,68 @@ function bluepic_oauth_callback() {
 }
 add_action('wp_ajax_bluepic_oauth_callback', 'bluepic_oauth_callback');
 
-// Bluepic-Projekte über WP REST API abrufen
-function get_bluepic_projects() {
-	$access_token = get_user_meta(get_current_user_id(), 'bluepic_access_token', true);
+// // Bluepic-Projekte über WP REST API abrufen
+// function get_bluepic_projects() {
+// 	$access_token = get_user_meta(get_current_user_id(), 'bluepic_access_token', true);
+
+// 	if (!$access_token) {
+// 			return new WP_Error('no_token', 'No access token available', array('status' => 401));
+// 	}
+
+// 	$response = wp_remote_get('https://embed-backend.staging.bluepic.io/project', array(
+// 			'headers' => array(
+// 					'Authorization' => 'Bearer ' . $access_token,
+// 			),
+// 	));
+
+// 	if (is_wp_error($response)) {
+// 			return new WP_Error('bluepic_error', 'Could not retrieve projects', array('status' => 500));
+// 	}
+
+// 	$projects = json_decode(wp_remote_retrieve_body($response), true);
+// 	return rest_ensure_response($projects);
+// }
+
+// add_action('rest_api_init', function () {
+// 	register_rest_route('bluepic/v1', '/projects', array(
+// 			'methods' => 'GET',
+// 			'callback' => 'get_bluepic_projects',
+// 			'permission_callback' => function () {
+// 					return current_user_can('edit_posts');
+// 			}
+// 	));
+// });
+
+
+
+function bluepic_test_api_call() {
+	$user_id = get_current_user_id();
+	$access_token = get_user_meta($user_id, 'bluepic_access_token', true);
 
 	if (!$access_token) {
-			return new WP_Error('no_token', 'No access token available', array('status' => 401));
+			return new WP_Error('no_access_token', 'No access token found.', array('status' => 403));
 	}
 
-	$response = wp_remote_get('https://api.bluepic.com/projects', array(
+	$response = wp_remote_get('https://embed-backend.staging.bluepic.io/project', array(
 			'headers' => array(
-					'Authorization' => 'Bearer ' . $access_token,
-			),
+					'Authorization' => 'Bearer ' . $access_token
+			)
 	));
 
 	if (is_wp_error($response)) {
-			return new WP_Error('bluepic_error', 'Could not retrieve projects', array('status' => 500));
+			return new WP_Error('api_error', $response->get_error_message(), array('status' => 500));
 	}
 
-	$projects = json_decode(wp_remote_retrieve_body($response), true);
-	return rest_ensure_response($projects);
+	$body = wp_remote_retrieve_body($response);
+	return json_decode($body, true);
 }
 
-add_action('rest_api_init', function () {
-	register_rest_route('bluepic/v1', '/projects', array(
-			'methods' => 'GET',
-			'callback' => 'get_bluepic_projects',
-			'permission_callback' => function () {
+add_action('rest_api_init', function() {
+	register_rest_route('wp/v2', '/bluepic-test-api-call', array(
+			'methods' => 'POST',
+			'callback' => 'bluepic_test_api_call',
+			'permission_callback' => function() {
 					return current_user_can('edit_posts');
-			}
+			},
 	));
 });
