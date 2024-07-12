@@ -138,7 +138,7 @@ export default function Edit({ attributes, setAttributes }) {
 			</InspectorControls>
 			<div
 				style={{
-					"pointer-events": "all",
+					"pointer-events": "none",
 				}}
 			>
 				<iframe

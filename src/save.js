@@ -19,16 +19,18 @@ export default function save({ attributes, setAttributes }) {
 	const { projectId } = attributes;
 
 	return (
-		<iframe
-			{...useBlockProps.save()}
-			src={`https://template.bluepic.io/${projectId}`}
-			style={{
-				width: "100%",
-				margin: "auto",
-				border: "none",
-				height: "80vh",
-			}}
-			allowFullScreen
-		></iframe>
+		<div>
+			<iframe
+				{...useBlockProps.save()}
+				src={`https://template.bluepic.io/${projectId}`}
+				style={{
+					width: "100%",
+					margin: "auto",
+					border: "none",
+					height: "80vh",
+				}}
+				allowFullScreen
+			></iframe>
+		</div>
 	);
 }
